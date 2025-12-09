@@ -1,0 +1,54 @@
+<h1 class="text-2xl font-bold mb-4">Contact us</h1>
+<p class="text-slate-300 mb-6">Have questions about plans, onboarding, or integrations? Send us a message.</p>
+ <% if (typeof error !== "undefined" && error) { %>
+  <p class="text-xs text-red-400 mb-3"><%= error %></p>
+<% } %>
+
+<% if (typeof success !== "undefined" && success) { %>
+  <p class="text-xs text-emerald-400 mb-3"><%= success %></p>
+<% } %>
+
+<form class="max-w-md space-y-4" method="POST" action="/contact">
+  <div>
+    <label class="text-xs text-slate-400 mb-1 block">Name</label>
+    <input
+      name="name"
+      class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm"
+      required
+    />
+  </div>
+  <div>
+    <label class="text-xs text-slate-400 mb-1 block">Work email</label>
+    <input
+      type="email"
+      name="email"
+      class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm"
+      required
+    />
+  </div>
+  <div>
+    <label class="text-xs text-slate-400 mb-1 block">WhatsApp number</label>
+    <input
+      type="text"
+      name="phone"
+      placeholder="91XXXXXXXXXX"
+      class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm"
+      required
+    />
+    <p class="text-[10px] text-slate-500 mt-1">
+      Enter with country code, e.g. 91xxxxxxxxxx for India (no +).
+    </p>
+  </div>
+  <div>
+    <label class="text-xs text-slate-400 mb-1 block">Message</label>
+    <textarea
+      rows="4"
+      name="message"
+      class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm"
+    ></textarea>
+  </div>
+  <button class="bg-emerald-500 hover:bg-emerald-400 text-slate-900 text-sm font-semibold px-4 py-2 rounded-xl">
+    Send message
+  </button>
+</form>
+

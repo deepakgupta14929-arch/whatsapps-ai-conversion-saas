@@ -1,0 +1,148 @@
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-bold tracking-tight">Leads</h1>
+    <p class="text-slate-300 text-sm mt-1">
+      All conversations captured from WhatsApp and your contact form.
+    </p>
+  </div>
+</div>
+
+<%
+  const totalLeads = leads.length;
+  const hotCount = leads.filter(l => l.qualificationLevel === 'hot').length;
+  const warmCount = leads.filter(l => l.qualificationLevel === 'warm').length;
+  const coldCount = leads.filter(l => l.qualificationLevel === 'cold').length;
+%>
+
+<div class="grid md:grid-cols-[260px,1fr] gap-6">
+
+  <!-- LEFT: Lead Summary / Filters -->
+  <aside class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4 text-sm">
+    <h2 class="font-semibold text-slate-100 text-sm mb-3">Summary</h2>
+
+    <div class="space-y-2">
+      <div class="flex justify-between text-slate-300">
+        <span>Total leads</span> <b><%= totalLeads %></b>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-slate-400">Hot</span>
+        <span class="font-semibold text-rose-400"><%= hotCount %></span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-slate-400">Warm</span>
+        <span class="font-semibold text-amber-300"><%= warmCount %></span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-slate-400">Cold</span>
+        <span class="font-semibold text-sky-300"><%= coldCount %></span>
+      </div>
+    </div>
+
+    <p class="mt-4 border-t border-slate-800 pt-4 text-xs text-slate-500 leading-relaxed">
+      <b>Hot</b> → high intent (budget + timeline clear)<br>
+      <b>Warm</b> → interested<br>
+      <b>Cold</b> → just exploring
+    </p>
+  </aside>
+
+  <!-- RIGHT: Lead List -->
+  <section class="space-y-3">
+
+    <% if (!leads.length) { %>
+      <div class="bg-slate-900/70 border border-dashed border-slate-700 rounded-2xl p-6 text-sm text-slate-300">
+        <h2 class="font-semibold mb-1">No leads yet</h2>
+        <p class="text-slate-400">
+          Once someone messages your WhatsApp number or submits a form,
+          they’ll appear here automatically.
+        </p>
+      </div>
+
+    <% } else { %>
+
+      <% leads.forEach((lead) => {
+        const q = lead.qualificationLevel || "new";
+        const pillText = q.toUpperCase();
+        let pillClass = "";
+        if (q === "hot") pillClass = "bg-rose-500/20 text-rose-300 border border-rose-500/40";
+        else if (q === "warm") pillClass = "bg-amber-500/20 text-amber-200 border border-amber-500/40";
+        else if (q === "cold") pillClass = "bg-sky-500/20 text-sky-200 border border-sky-500/40";
+        else pillClass = "bg-slate-700/60 text-slate-200 border border-slate-600";
+      %>
+
+      <article class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4 text-sm hover:border-slate-600 transition">
+
+        <!-- TOP: Name, Source, Qualification -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div>
+            <h2 class="font-semibold text-slate-50 text-base">
+              <%= lead.name || 'Unknown lead' %>
+            </h2>
+
+            <div class="flex flex-wrap items-center gap-2 mt-1 text-xs">
+              <% if (lead.source) { %>
+                <span class="px-2 py-0.5 rounded-full bg-slate-800 text-[10px] uppercase tracking-wide text-slate-400">
+                  <%= lead.source %>
+                </span>
+              <% } %>
+
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold <%= pillClass %>">
+                <%= pillText %>
+              </span>
+            </div>
+          </div>
+
+          <div class="text-[11px] text-slate-500 whitespace-nowrap">
+            <%= new Date(lead.createdAt).toLocaleString() %>
+          </div>
+        </div>
+
+        <!-- Contact + Last message -->
+        <div class="mt-3 text-xs text-slate-400 space-y-2">
+          <% if (lead.phone) { %>
+            <div>📞 <%= lead.phone %></div>
+          <% } %>
+          <% if (lead.email) { %>
+            <div>✉️ <%= lead.email %></div>
+          <% } %>
+
+          <% if (lead.lastMessage) { %>
+            <div class="bg-slate-950/70 border border-slate-800 rounded-xl px-3 py-2 text-slate-200">
+              “<%= lead.lastMessage %>”
+            </div>
+          <% } %>
+        </div>
+
+        <!-- AI Tags -->
+        <div class="flex flex-wrap gap-2 mt-3 text-[11px]">
+          <% if (lead.budget) { %>
+            <span class="px-2 py-1 rounded-full bg-slate-800 text-emerald-300">
+              Budget: <%= lead.budget %>
+            </span>
+          <% } %>
+          <% if (lead.timeline) { %>
+            <span class="px-2 py-1 rounded-full bg-slate-800 text-sky-300">
+              Timeline: <%= lead.timeline %>
+            </span>
+          <% } %>
+          <% if (lead.useCase) { %>
+            <span class="px-2 py-1 rounded-full bg-slate-800 text-violet-300">
+              Use case: <%= lead.useCase %>
+            </span>
+          <% } %>
+        </div>
+
+        <!-- CTA -->
+        <div class="mt-4">
+          <a href="/leads/<%= lead._id %>"
+            class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold">
+            View Conversation →
+          </a>
+        </div>
+
+      </article>
+
+      <% }) %>
+    <% } %>
+
+  </section>
+</div>

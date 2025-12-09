@@ -1,0 +1,121 @@
+<div class="max-w-3xl mx-auto">
+  <h1 class="text-2xl font-bold mb-2">Set up your account</h1>
+  <p class="text-slate-300 text-sm mb-6">
+    We’ll use this info to customize your WhatsApp AI assistant for your agency.
+  </p>
+
+  <form method="POST" action="/onboarding" class="space-y-8 text-sm">
+
+    <!-- Brand & business -->
+    <section class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-4">
+      <h2 class="font-semibold text-slate-100 text-sm">Business details</h2>
+
+      <div>
+        <label class="text-xs text-slate-400 mb-1 block">Brand / Agency name</label>
+        <input
+          name="brandName"
+          value="<%= user?.brandName || '' %>"
+          class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white"
+          placeholder="e.g. Deepak Media, GrowthFox Ads"
+          required
+        />
+      </div>
+
+      <div>
+        <label class="text-xs text-slate-400 mb-1 block">Website (optional)</label>
+        <input
+          name="websiteUrl"
+          value="<%= user?.websiteUrl || '' %>"
+          class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white"
+          placeholder="https://youragency.com"
+        />
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="text-xs text-slate-400 mb-1 block">Target country / region</label>
+          <input
+            name="targetCountry"
+            value="<%= user?.targetCountry || '' %>"
+            class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white"
+            placeholder="e.g. India, US, UK"
+          />
+        </div>
+
+        <div>
+          <label class="text-xs text-slate-400 mb-1 block">Main offer</label>
+          <input
+            name="primaryOffer"
+            value="<%= user?.primaryOffer || '' %>"
+            class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white"
+            placeholder="e.g. Facebook ads for gyms"
+          />
+        </div>
+      </div>
+    </section>
+
+    <!-- WhatsApp greeting -->
+    <section class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-4">
+      <h2 class="font-semibold text-slate-100 text-sm">WhatsApp greeting</h2>
+
+      <p class="text-xs text-slate-400">
+        This is the first message your bot sends when a new lead says “hi”.
+      </p>
+
+      <textarea
+        name="whatsappGreeting"
+        rows="3"
+        class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm"
+        placeholder="Hi! 👋 Thanks for reaching out to Deepak Media. I can help with pricing, strategy and booking a call. How can I help you today?"
+      ><%= user?.whatsappGreeting || '' %></textarea>
+    </section>
+
+    <!-- AI persona -->
+    <section class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-4">
+      <h2 class="font-semibold text-slate-100 text-sm">AI assistant style</h2>
+
+      <div class="grid md:grid-cols-3 gap-3">
+        <label class="flex items-center gap-2 text-xs text-slate-300">
+          <input type="radio" name="aiTone" value="Friendly"
+            <%= (user?.aiTone || 'Friendly') === 'Friendly' ? 'checked' : '' %> />
+          <span>Friendly</span>
+        </label>
+
+        <label class="flex items-center gap-2 text-xs text-slate-300">
+          <input type="radio" name="aiTone" value="Formal"
+            <%= user?.aiTone === 'Formal' ? 'checked' : '' %> />
+          <span>Formal</span>
+        </label>
+
+        <label class="flex items-center gap-2 text-xs text-slate-300">
+          <input type="radio" name="aiTone" value="High-energy"
+            <%= user?.aiTone === 'High-energy' ? 'checked' : '' %> />
+          <span>High-energy / Salesy</span>
+        </label>
+      </div>
+
+      <div>
+        <label class="text-xs text-slate-400 mb-1 block">
+          Extra instructions for AI (optional)
+        </label>
+        <textarea
+          name="aiNotes"
+          rows="4"
+          class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm"
+          placeholder="Example: We help dentists get 20–30 new patients/month. Ask budget + city + timeline. If they’re qualified, offer to book a strategy call using my Calendly link."
+        ><%= user?.aiNotes || '' %></textarea>
+      </div>
+    </section>
+
+    <div class="flex justify-end gap-3">
+      <a href="/dashboard" class="text-xs text-slate-400 hover:text-slate-200">
+        Skip for now
+      </a>
+      <button
+        type="submit"
+        class="bg-emerald-500 hover:bg-emerald-400 text-slate-900 text-xs font-semibold px-5 py-2 rounded-xl">
+        Save & continue
+      </button>
+    </div>
+  </form>
+</div>

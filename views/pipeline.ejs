@@ -1,0 +1,118 @@
+<h1 class="text-2xl font-bold mb-2 text-white">Pipeline</h1>
+<p class="text-slate-400 text-sm mb-4">
+  Drag leads between stages to manage your sales pipeline.
+</p>
+
+<div class="grid grid-cols-5 gap-4 h-[calc(100vh-140px)]">
+  <% stages.forEach(function(stageKey) { 
+      const list = (columns && columns[stageKey]) || [];
+      const labelMap = {
+        new: "New",
+        contacted: "Contacted",
+        qualified: "Qualified",
+        hot: "Hot",
+        closed: "Closed"
+      };
+      const label = labelMap[stageKey] || stageKey;
+  %>
+    <div class="flex flex-col bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden">
+      <!-- Column header -->
+      <div class="px-3 py-2 border-b border-slate-800 flex items-center justify-between">
+        <span class="text-xs font-semibold text-slate-100 tracking-wide">
+          <%= label %>
+        </span>
+        <span class="text-[11px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
+          <%= list.length %>
+        </span>
+      </div>
+
+      <!-- Column body (drop area) -->
+      <div
+        class="flex-1 overflow-y-auto p-2 space-y-2 pipeline-column"
+        data-stage-column="<%= stageKey %>"
+      >
+        <% list.forEach(function(lead) { %>
+          <div
+            class="bg-slate-800/70 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 cursor-move lead-card"
+            draggable="true"
+            data-lead-id="<%= lead._id %>"
+          >
+            <div class="font-semibold text-[13px] mb-0.5">
+              <%= lead.name || lead.phone || "Unknown lead" %>
+            </div>
+            <div class="text-[11px] text-slate-400 truncate">
+              <%= lead.source || "Source: unknown" %>
+            </div>
+            <% if (lead.lastMessage) { %>
+              <div class="text-[11px] text-slate-500 mt-1 line-clamp-2">
+                "<%= lead.lastMessage %>"
+              </div>
+            <% } %>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  <% }) %>
+</div>
+
+<script>
+  (function () {
+    const cards = document.querySelectorAll(".lead-card");
+    const columns = document.querySelectorAll(".pipeline-column");
+
+    cards.forEach((card) => {
+      card.addEventListener("dragstart", (e) => {
+        e.dataTransfer.setData("text/plain", card.dataset.leadId);
+        // optional: style
+        card.classList.add("opacity-60");
+      });
+
+      card.addEventListener("dragend", () => {
+        card.classList.remove("opacity-60");
+      });
+    });
+
+    columns.forEach((col) => {
+      col.addEventListener("dragover", (e) => {
+        e.preventDefault();
+      });
+
+      col.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const leadId = e.dataTransfer.getData("text/plain");
+        const stage = col.dataset.stageColumn;
+        if (!leadId || !stage) return;
+
+        const card = document.querySelector('[data-lead-id="' + leadId + '"]');
+        if (card && card.parentNode !== col) {
+          // Move card in UI
+          col.prepend(card);
+        }
+
+        try {
+          const body = new URLSearchParams();
+          body.append("leadId", leadId);
+          body.append("stage", stage);
+
+          const res = await fetch("/pipeline/move", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body,
+          });
+
+          const json = await res.json();
+          if (!json.ok) {
+            console.error("Pipeline move error:", json.error);
+            alert("Failed to update stage: " + (json.error || "Unknown error"));
+          }
+        } catch (err) {
+          console.error("Pipeline move fetch error:", err);
+          alert("Network error while updating stage");
+        }
+      });
+    });
+  })();
+</script>
+

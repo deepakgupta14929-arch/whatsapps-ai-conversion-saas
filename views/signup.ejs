@@ -1,0 +1,52 @@
+<div class="max-w-md mx-auto bg-slate-900/70 border border-slate-800 rounded-2xl p-6">
+  <h1 class="text-xl font-bold mb-4 text-center">Create your account</h1>
+
+  <% if (error) { %>
+    <p class="text-xs text-red-400 mb-3"><%= error %></p>
+  <% } %>
+
+  <form class="space-y-4" method="POST" action="/signup">
+    <div>
+      <label class="text-xs text-slate-400 mb-1 block">Full name</label>
+      <input
+        name="name"
+        class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm"
+        required
+      />
+    </div>
+    <div>
+      <label class="text-xs text-slate-400 mb-1 block">Work email</label>
+      <input
+        type="email"
+        name="email"
+        class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm"
+        required
+      />
+    </div>
+    <div>
+      <label class="text-xs text-slate-400 mb-1 block">Password</label>
+      <input
+        type="password"
+        name="password"
+        class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm"
+        required
+      />
+    </div>
+    <div>
+      <label class="text-xs text-slate-400 mb-1 block">Business type</label>
+      <select
+        name="businessType"
+        class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm"
+      >
+        <option>Agency</option>
+        <option>Coach / Institute</option>
+        <option>Local service</option>
+        <option>E-commerce / D2C</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <button class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-semibold text-sm py-2 rounded-xl">
+      Create account
+    </button>
+  </form>
+</div>

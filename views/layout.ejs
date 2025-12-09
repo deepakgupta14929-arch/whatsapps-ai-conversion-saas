@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title><%= title %> | LeadZapp AI</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Optional small custom CSS file (can be almost empty) -->
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body class="bg-slate-950 text-slate-100">
+    <% if (currentUser) { %>
+      <!-- AUTHENTICATED APP LAYOUT -->
+      <div class="min-h-screen flex flex-col md:flex-row">
+        <!-- Mobile top bar -->
+        <header
+          class="md:hidden flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-slate-950/90 backdrop-blur">
+          <div class="flex items-center gap-2">
+            <div
+              class="h-8 w-8 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+              💬
+            </div>
+            <div>
+              <p class="text-xs text-slate-400 leading-tight">LeadZapp AI</p>
+              <p class="text-[11px] text-slate-500">
+                WhatsApp + AI lead automation
+              </p>
+            </div>
+          </div>
+          <button
+            id="mobileMenuBtn"
+            class="h-9 w-9 flex items-center justify-center rounded-xl border border-slate-700 hover:bg-slate-800/80 transition">
+            ☰
+          </button>
+        </header>
+
+        <!-- Sidebar -->
+        <aside
+          id="appSidebar"
+          class="fixed inset-y-0 left-0 z-40 w-60 bg-slate-950 border-r border-slate-800 p-4 flex flex-col gap-4
+                 transform -translate-x-full md:translate-x-0 md:static md:block
+                 transition-transform duration-200 ease-out">
+          <div class="hidden md:flex items-center gap-2 mb-3">
+            <div
+              class="h-9 w-9 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-lg">
+              💬
+            </div>
+            <div>
+              <p class="text-sm font-semibold tracking-tight">LeadZapp AI</p>
+              <p class="text-[11px] text-slate-500">
+                WhatsApp + AI lead automation
+              </p>
+            </div>
+          </div>
+
+          <!-- Close button on mobile -->
+          <div class="flex md:hidden items-center justify-between mb-3">
+            <span class="text-xs text-slate-400">
+              LeadZapp AI
+            </span>
+            <button
+              id="mobileCloseBtn"
+              class="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-700 hover:bg-slate-800/80 text-xs">
+              ✕
+            </button>
+          </div>
+
+          <!-- Navigation -->
+          <nav class="flex-1">
+            <ul class="space-y-1 text-sm text-slate-300">
+              <li
+                class="<%= currentPath === '/dashboard' ? 'bg-slate-800/80 text-emerald-400 rounded-xl' : '' %>">
+                <a
+                  href="/dashboard"
+                  class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-slate-800/70 transition">
+                  📊 <span>Dashboard</span>
+                </a>
+              </li>
+              <li
+                class="<%= currentPath === '/leads' ? 'bg-slate-800/80 text-emerald-400 rounded-xl' : '' %>">
+                <a
+                  href="/leads"
+                  class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-slate-800/70 transition">
+                  📚 <span>Leads</span>
+                </a>
+              </li>
+              <li
+                class="<%= currentPath === '/settings' ? 'bg-slate-800/80 text-emerald-400 rounded-xl' : '' %>">
+                <a
+                  href="/settings"
+                  class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-slate-800/70 transition">
+                  ⚙️ <span>Settings</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+
+          <!-- Footer / logout -->
+          <div class="mt-3 pt-3 border-t border-slate-800">
+            <p class="text-[11px] text-slate-500 mb-2 truncate">
+              <span class="text-slate-400">Logged in:</span>
+              <%= currentUser?.email %>
+            </p>
+            <form method="POST" action="/logout">
+              <button
+                class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-red-500/90 text-xs font-semibold hover:bg-red-400 transition">
+                🚪 Logout
+              </button>
+            </form>
+          </div>
+        </aside>
+
+        <!-- Backdrop for mobile sidebar -->
+        <div
+          id="sidebarBackdrop"
+          class="fixed inset-0 bg-black/40 z-30 opacity-0 pointer-events-none transition-opacity duration-200 md:hidden"></div>
+
+        <!-- Main content -->
+        <main
+          class="flex-1 bg-slate-900/60 px-4 py-4 md:px-8 md:py-8 md:ml-0 md:mt-0 mt-2 overflow-x-hidden">
+          <%- include(view) %>
+        </main>
+      </div>
+    <% } else { %>
+      <!-- PUBLIC MARKETING SITE -->
+      <header
+        class="w-full border-b border-slate-800 bg-slate-950/80 backdrop-blur flex items-center justify-between gap-4 px-4 md:px-10 py-3 text-sm text-slate-300">
+        <div class="flex items-center gap-2">
+          <div
+            class="h-8 w-8 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+            💬
+          </div>
+          <span class="font-semibold text-xs md:text-sm tracking-tight">
+            LeadZapp AI
+          </span>
+        </div>
+
+        <nav class="flex items-center gap-3 md:gap-4">
+          <a href="/" class="hover:text-white text-xs md:text-sm">Home</a>
+          <a href="/pricing" class="hover:text-white text-xs md:text-sm">
+            Pricing
+          </a>
+          <a href="/contact" class="hover:text-white text-xs md:text-sm">
+            Contact
+          </a>
+          <a
+            href="/login"
+            class="ml-2 px-3 py-1.5 rounded-full border border-slate-700 hover:bg-slate-800 text-xs md:text-sm">
+            Login
+          </a>
+          <a
+            href="/signup"
+            class="px-3 py-1.5 rounded-full bg-emerald-500 text-slate-950 font-semibold hover:bg-emerald-400 text-xs md:text-sm">
+            Sign up
+          </a>
+        </nav>
+      </header>
+
+      <main class="max-w-5xl mx-auto px-4 md:px-6 py-8 md:py-10">
+        <%- include(view) %>
+      </main>
+    <% } %>
+
+    <!-- Small JS for mobile sidebar -->
+    <script>
+      const sidebar = document.getElementById("appSidebar");
+      const btn = document.getElementById("mobileMenuBtn");
+      const closeBtn = document.getElementById("mobileCloseBtn");
+      const backdrop = document.getElementById("sidebarBackdrop");
+
+      if (btn && sidebar && backdrop) {
+        const openSidebar = () => {
+          sidebar.classList.remove("-translate-x-full");
+          backdrop.classList.remove("pointer-events-none");
+          backdrop.classList.add("opacity-100");
+        };
+
+        const closeSidebar = () => {
+          sidebar.classList.add("-translate-x-full");
+          backdrop.classList.add("pointer-events-none");
+          backdrop.classList.remove("opacity-100");
+        };
+
+        btn.addEventListener("click", openSidebar);
+        if (closeBtn) closeBtn.addEventListener("click", closeSidebar);
+        backdrop.addEventListener("click", closeSidebar);
+      }
+    </script>
+  </body>
+</html>
+
