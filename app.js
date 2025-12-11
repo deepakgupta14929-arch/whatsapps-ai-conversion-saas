@@ -86,11 +86,11 @@ app.use(express.urlencoded({ extended: true })); // forms
 app.use(express.json()); // JSON (webhook, APIs)
   // near your other route imports
 const leadMessagesRoutes = require("./routes/leads.api.routes.js"); // or new filename
-app.use("/api/leads", leadMessagesRoutes);
+
 
 // ... then your sessions, auth, routes:
 const visitRoutes = require("./routes/visit.routes");
-app.use("/api/visits", visitRoutes);
+
 // Sessions
 
 app.use(
@@ -102,8 +102,8 @@ app.use(
 );
 app.use(analyticsRoutes);
 app.use(coachRoutes);
-app.use(leadsApiRoutes);
-
+app.use("/api/visits", visitRoutes);
+app.use("/api/leads", leadMessagesRoutes);
 // Email transporter
 const emailTransporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -1198,19 +1198,43 @@ app.get("/debug/events", requireAuth, async (req, res) => {
     res.status(500).send("Error loading events");
   }
 });
+
+
+// Debug: show recent events for current agency (requires auth)
 app.get("/debug-events", requireAuth, async (req, res) => {
-  const events = await require("./models/event.model").find({ agencyId: req.session && req.session.agencyId ? req.session.agencyId : undefined })
-    .sort({ createdAt: -1 })
-    .limit(200)
-    .lean();
-  res.setHeader("Content-Type","application/json");
-  res.send(JSON.stringify(events, null, 2));
-});
-app.get("/debug-events-all", async (req, res) => {
-  const events = await require("./models/event.model").find().sort({ createdAt: -1 }).limit(200).lean();
-  res.json({ events });
+  try {
+    // if no agency in session return empty
+    const agencyId = req.session && req.session.agencyId ? req.session.agencyId : null;
+    if (!agencyId) {
+      return res.status(200).json({ events: [] });
+    }
+
+    const events = await EventLog.find({ agencyId })
+      .sort({ createdAt: -1 })
+      .limit(200)
+      .lean();
+
+    res.setHeader("Content-Type", "application/json");
+    res.send(JSON.stringify(events, null, 2));
+  } catch (err) {
+    console.error("/debug-events error:", err);
+    res.status(500).send("Error loading debug events");
+  }
 });
 
+// Debug: show recent events across all agencies (no auth required)
+app.get("/debug-events-all", async (req, res) => {
+  try {
+    const events = await EventLog.find()
+      .sort({ createdAt: -1 })
+      .limit(200)
+      .lean();
+    res.json({ events });
+  } catch (err) {
+    console.error("/debug-events-all error:", err);
+    res.status(500).json({ ok: false, error: "Failed to load events" });
+  }
+});
 
 
 // ====== WHATSAPP TEST ROUTES ======

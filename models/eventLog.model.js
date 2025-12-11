@@ -1,9 +1,6 @@
 // models/eventLog.model.js
 const mongoose = require("mongoose");
 
-// eventLogSchema.index({ agencyId: 1, createdAt: -1 });
-// eventLogSchema.index({ type: 1, agencyId: 1 });
-
 
 const eventLogSchema = new mongoose.Schema(
   {
