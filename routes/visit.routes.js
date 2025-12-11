@@ -1,84 +1,73 @@
+// routes/visit.routes.js
 const express = require("express");
-const Visit = require("../models/visit.model");
-const Lead = require("../models/lead.model");
+const Visit = require("../models/visit.model"); // adjust path if different
+const Lead = require("../models/lead.model");   // to verify lead existence
 
 const router = express.Router();
 
-// POST /api/visits/:leadId/book
+// Body parser requirement: ensure app.js uses express.json() (see notes below)
+
+// POST /api/visits/:leadId/book  -> create a visit for a lead
 router.post("/:leadId/book", async (req, res) => {
   try {
-    // safety: check body exists
-    if (!req.body) {
-      return res.status(400).json({ error: "Request body missing" });
-    }
-
     const { leadId } = req.params;
-    const {
-      date,
-      timeSlot,
-      familyComing,
-      pickupRequired,
-      notes,
-    } = req.body;
+    const { date, timeSlot, familyComing, pickupRequired, notes, source } = req.body;
 
-    // basic validation
+    // Basic validation
     if (!date || !timeSlot) {
-      return res
-        .status(400)
-        .json({ error: "date and timeSlot are required" });
+      return res.status(400).json({ error: "Missing required fields: date or timeSlot" });
     }
 
     const lead = await Lead.findById(leadId);
-    if (!lead) {
-      return res.status(404).json({ error: "Lead not found" });
-    }
+    if (!lead) return res.status(404).json({ error: "Lead not found" });
 
     const visit = await Visit.create({
       leadId,
-      agencyId: lead.agencyId,
-      assignedAgentId: lead.assignedTo,
+      agencyId: lead.agencyId || null,
+      assignedAgentId: lead.assignedTo || null,
       date,
       timeSlot,
-      familyComing: Boolean(familyComing),
-      pickupRequired: Boolean(pickupRequired),
-      notes,
+      familyComing: !!familyComing,
+      pickupRequired: !!pickupRequired,
+      notes: notes || "",
+      source: source || "WhatsApp",
+      visitStatus: "pending",
     });
 
-    return res.json({ ok: true, visit });
+    // Return the newly created visit (with populated lead)
+    const populated = await Visit.findById(visit._id).populate("leadId");
+
+    return res.json({ ok: true, visit: populated });
   } catch (err) {
     console.error("Visit create error:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
 
-// GET /api/visits  – list visits for current agency
-// routes/visit.routes.js
-router.get("/", async (req, res) => {
+// GET /api/visits/lead/:leadId - get visits for a single lead (newest first)
+router.get("/lead/:leadId", async (req, res) => {
   try {
-    const filter = {};
+    const { leadId } = req.params;
 
-    // In real app: filter by agency
-    if (req.agencyId) {
-      filter.agencyId = req.agencyId;
-    }
+    const visits = await Visit.find({ leadId: leadId })
+      .sort({ date: -1, createdAt: -1 })
+      .populate("leadId"); // populate for frontend convenience
 
- const visits = await Visit.find({ agencyId: req.agencyId })
-      .populate("leadId")
-      .sort({ date: -1, createdAt: -1 });   // ⬅️ newest first
-    return res.json({ visits });
+    res.json({ ok: true, visits });
   } catch (err) {
-    console.error("Load visits error:", err);
-    res.status(500).json({ error: "Failed to load visits" });
+    console.error("fetch visits by lead error:", err);
+    res.status(500).json({ error: "Server error" });
   }
 });
-// at bottom of routes/visit.routes.js, before module.exports:
-router.get("/debug/all", async (req, res) => {
+
+// Optional: GET /api/visits -> return all visits (admin/debug)
+router.get("/", async (req, res) => {
   try {
-    const visits = await Visit.find().populate("leadId");
-    res.json({ visits });
+    const visits = await Visit.find().sort({ date: -1 }).populate("leadId");
+    res.json({ ok: true, visits });
   } catch (err) {
-    console.error("Debug visits error:", err);
-    res.status(500).json({ error: "Debug route failed" });
+    console.error("fetch all visits error:", err);
+    res.status(500).json({ error: "Server error" });
   }
 });
 

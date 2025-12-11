@@ -84,11 +84,15 @@ app.use(express.static(path.join(__dirname, "public")));
 // Body parsers
 app.use(express.urlencoded({ extended: true })); // forms
 app.use(express.json()); // JSON (webhook, APIs)
-  
+  // near your other route imports
+const leadMessagesRoutes = require("./routes/leads.api.routes.js"); // or new filename
+app.use("/api/leads", leadMessagesRoutes);
+
 // ... then your sessions, auth, routes:
 const visitRoutes = require("./routes/visit.routes");
 app.use("/api/visits", visitRoutes);
 // Sessions
+
 app.use(
   session({
     secret: "change-this-secret-later", // TODO: move to env in prod
@@ -215,7 +219,8 @@ app.post("/contact", requireAuth, async (req, res) => {
   type: "lead_created",
   meta: {
     source: "contact_form",
-    messageSnippet: message.slice(0, 120),
+    //messageSnippet: message.slice(0, 120),
+     messageSnippet: (message || "").slice(0, 120),
   },
 });
 
@@ -277,6 +282,16 @@ app.post("/contact", requireAuth, async (req, res) => {
     fakeReason: newLead.fakeReason,
   },
 });
+   
+    if (newLead.isFake && newLead.stage === "lost") {
+  await logEvent({
+    agencyId: currentUser.agencyId,
+    userId: currentUser._id,
+    leadId: newLead._id,
+    type: "lead_updated",
+    meta: { notes: "Marked as fake by AI", fakeReason: newLead.fakeReason },
+  });
+}
 
 
         console.log("Contact AI mapped:", {
@@ -1183,6 +1198,20 @@ app.get("/debug/events", requireAuth, async (req, res) => {
     res.status(500).send("Error loading events");
   }
 });
+app.get("/debug-events", requireAuth, async (req, res) => {
+  const events = await require("./models/event.model").find({ agencyId: req.session && req.session.agencyId ? req.session.agencyId : undefined })
+    .sort({ createdAt: -1 })
+    .limit(200)
+    .lean();
+  res.setHeader("Content-Type","application/json");
+  res.send(JSON.stringify(events, null, 2));
+});
+app.get("/debug-events-all", async (req, res) => {
+  const events = await require("./models/event.model").find().sort({ createdAt: -1 }).limit(200).lean();
+  res.json({ events });
+});
+
+
 
 // ====== WHATSAPP TEST ROUTES ======
 
@@ -1263,7 +1292,10 @@ app.post("/webhook", express.json(), async (req, res) => {
     const value = changes?.value;
     const messageObj = value?.messages?.[0];
 
-
+      if (!entry) {
+      console.log("Webhook: no entry");
+      return res.sendStatus(200);
+    }
     // Ignore status-only callbacks (sent/delivered/read)
     if (!messageObj) {
       return res.sendStatus(200);
@@ -1309,7 +1341,7 @@ app.post("/webhook", express.json(), async (req, res) => {
       type: "whatsapp_in",
       meta: {
         direction: "in",
-        messageSnippet: text.slice(0, 120),
+        messageSnippet: (text || "").slice(0, 120),
       },
     });
 
@@ -1418,7 +1450,7 @@ app.post("/webhook", express.json(), async (req, res) => {
       type: "whatsapp_out_ai",
       meta: {
         direction: "out",
-        messageSnippet: aiReply.slice(0, 120),
+        messageSnippet: (aiReply || "").slice(0, 120),waResult
       },
     });
 

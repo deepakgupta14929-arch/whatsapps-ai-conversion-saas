@@ -42,6 +42,7 @@ async function scheduleFollowUpsForLead(userId, lead) {
           meta: {
             channel: rule.channel,
             notes: `delayHours=${rule.delayHours}`,
+             message: rule.message?.slice(0,120) 
           },
         });
       }
@@ -240,7 +241,7 @@ async function processFollowUpJobs() {
             type: "followup_sent",
             meta: {
               channel: job.channel,
-              messageSnippet: job.message.slice(0, 120),
+              messageSnippet: job.message?.slice(0, 120)
             },
           });
 
